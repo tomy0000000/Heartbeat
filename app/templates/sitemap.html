@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% set page_title = "Site Map" %}
+{% block body %}
+
+<ul>
+    {% for url, endpoint in links %}
+        <li><a href="{{ url }}">{{ endpoint }}</a></li>
+    {% endfor %}
+</ul>
+
+{# <ul>
+    {% for route in map %}
+    <li>{{ route }}</li>
+    <ul>
+        <li>{{ route.defaults }}</li>
+        <li>{{ route.arguments }}</li>
+        <li>{{ route.endpoint }}</li>
+    </ul>
+    {% endfor %}
+</ul> #}
+
+{% endblock %}

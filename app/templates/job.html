@@ -1,0 +1,102 @@
+{% extends "layout.html" %}
+
+{% if job %}
+{% set page_title = "Modify Job" %}
+{% else %}
+{% set page_title = "Add Job" %}
+{% endif %}
+
+{% block stylesheet %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% endblock %}
+{% block body %}
+<form id="" name="" class="needs-validation" method="POST" novalidate>
+    <div class="form-group">
+        {{ form.id.label }}
+        {% if job %}
+        {{ form.id(class="form-control", value=job.id, readonly="") }}
+        {% else %}
+        {{ form.id(class="form-control") }}
+        {% endif %}
+    </div>
+    <div class="form-group">
+        {{ form.name.label }}
+        {% if job %}
+        {{ form.name(class="form-control", value=job.name) }}
+        {% else %}
+        {{ form.name(class="form-control") }}
+        {% endif %}
+    </div>
+    <div class="form-group">
+        {{ form.func.label }}
+        {% if job %}
+        {{ form.func(class="form-control", value=job.func, readonly="") }}
+        {% else %}
+        {{ form.func(class="form-control", readonly="") }}
+        {% endif %}
+    </div>
+    <div class="form-group">
+        {{ form.args.label }}
+        {% if job %}
+        {{ form.args(class="form-control", value=job.args, readonly="") }}
+        {% else %}
+        {{ form.args(class="form-control", readonly="") }}
+        {% endif %}
+    </div>
+    <div class="form-group">
+        {{ form.kwargs.label }}
+        {% if job %}
+        {{ form.kwargs(class="form-control", value=job.kwargs, readonly="") }}
+        {% else %}
+        {{ form.kwargs(class="form-control", readonly="") }}
+        {% endif %}
+    </div>
+    <div class="custom-control custom-switch">
+        {% if job and job.coalesce %}
+        {{ form.coalesce(class="custom-control-input", checked="") }}
+        {% else %}
+        {{ form.coalesce(class="custom-control-input") }}
+        {% endif %}
+        {{ form.coalesce.label(class="custom-control-label") }}
+    </div>
+    <div class="form-group">
+        {{ form.trigger.label }}
+        {{ form.trigger(class="form-control") }}
+    </div>
+    <div class="form-group">
+        {{ form.executor.label }}
+        {% if job %}
+        {{ form.executor(class="form-control", value=job.executor, readonly="") }}
+        {% else %}
+        {{ form.executor(class="form-control", readonly="") }}
+        {% endif %}
+    </div>
+    <div class="form-group">
+        {{ form.misfire_grace_time.label }}
+        {% if job %}
+        {{ form.misfire_grace_time(type="number", class="form-control", value=job.misfire_grace_time) }}
+        {% else %}
+        {{ form.misfire_grace_time(type="number", class="form-control") }}
+        {% endif %}
+    </div>
+    <div class="form-group">
+        {{ form.max_instances.label }}
+        {% if job %}
+        {{ form.max_instances(type="number", class="form-control", value=job.max_instances) }}
+        {% else %}
+        {{ form.max_instances(type="number", class="form-control") }}
+        {% endif %}
+    </div>
+    <div class="form-group">
+        {{ form.next_run_time.label }}
+        {% if job %}
+        {{ form.next_run_time(type="datetime-local", class="form-control", value=job.next_run_time) }}
+        {% else %}
+        {{ form.next_run_time(type="datetime-local", class="form-control") }}
+        {% endif %}
+    </div>
+    {{ form.csrf_token }}
+    {{ form.type }}
+    {{ form.submit(class="btn btn-primary btn-lg m-2") }}
+</form>
+{% endblock %}
