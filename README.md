@@ -12,6 +12,7 @@ The app has been rebuilt from ground up with a new backend system, if you're int
 
 ```bash
 git clone https://github.com/tomy0000000/TSkr-legacy.git
+cd TSkr-legacy
 ```
 
 * Install Packages (pipenv is suggested)
@@ -19,8 +20,6 @@ git clone https://github.com/tomy0000000/TSkr-legacy.git
 ```bash
 pipenv install
 ```
-
-
 
 ## Run
 
