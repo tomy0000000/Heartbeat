@@ -1,4 +1,4 @@
-"""Boot Script of Tubee"""
+"""Boot Script of TSkr"""
 import os
 from dotenv import load_dotenv
 

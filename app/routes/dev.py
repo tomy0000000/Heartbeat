@@ -1,9 +1,9 @@
 """dev Blueprint"""
 import os
 import sys
-import uwsgi
 import signal
 from flask import Blueprint, current_app, request, render_template, url_for
+from .. import login_manager
 from ..helper import send_notification
 dev_blueprint = Blueprint("dev", __name__)
 
@@ -42,24 +42,33 @@ def dict_flask():
     target_dict = current_app.__dict__
     return render_template("empty.html", content=target_dict)
 
+@dev_blueprint.route("/dict_scheduler")
+def dict_scheduler():
+    target_dict = current_app.apscheduler.__dict__
+    return render_template("empty.html", content=target_dict)
+
 @dev_blueprint.route("/uwsgi_workers")
 def uwsgi_workers():
+    import uwsgi
     target_dict = uwsgi.workers()
     return render_template("empty.html", content=target_dict)
 
 @dev_blueprint.route("/uwsgi_applist")
 def uwsgi_applist():
+    import uwsgi
     target_dict = uwsgi.started_on
     return render_template("empty.html", content=target_dict)
 
 @dev_blueprint.route("/uwsgi_workers_reload")
 def uwsgi_workers_reload():
+    import uwsgi
     os.kill(uwsgi.masterpid(), signal.SIGHUP)
     response = "Workers reloaded"
     return render_template("empty.html", content=response)
 
 @dev_blueprint.route("/uwsgi_worker_reload/<worker_id>")
 def uwsgi_worker_reload(worker_id):
+    import uwsgi
     pid = None
     for worker in uwsgi.workers():
         if worker["id"] == int(worker_id):

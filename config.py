@@ -22,10 +22,7 @@ class Config:
 
     @staticmethod
     def init_app(app):
-        with app.app_context():
-            app.config["SCHEDULER_JOBSTORES"] = {
-                "default": SQLAlchemyJobStore(engine=app.db.engine)
-            }
+        pass
 
 class DevelopmentConfig(Config):
     """Config for local Development"""
@@ -55,6 +52,13 @@ class ProductionConfig(Config):
     @classmethod
     def init_app(cls, app):
         Config.init_app(app)
+        with app.app_context():
+            app.config["SCHEDULER_JOBSTORES"] = {
+                "default": {
+                    "type": "sqlalchemy",
+                    "url": cls.SQLALCHEMY_DATABASE_URI
+                }
+            }
 
 class UnixConfig(ProductionConfig):
     @classmethod

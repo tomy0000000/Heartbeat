@@ -6,9 +6,9 @@ from datetime import datetime, timedelta
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
-from flask import Blueprint, redirect, request, render_template, url_for
+from flask import Blueprint, current_app, redirect, request, render_template, url_for
 from flask_login import current_user, login_user, logout_user, login_required
-from .. import login_manager, scheduler
+from .. import login_manager
 from ..forms import JobForm, LoginForm
 from ..helper import send_notification
 from ..models import Users
@@ -30,7 +30,7 @@ def date_func(session_id):
     logger.warning(session_id)
     logger.info(datetime.now())
     fire_datetime = datetime.now() + timedelta(minutes=5)
-    job_response = scheduler.add_job(
+    job_response = current_app.apscheduler.add_job(
         id="date_job",
         func=date_func,
         args=[generate_random_id()],
@@ -93,13 +93,14 @@ def load_user(user_id):
 
 @main_blueprint.route("/")
 def dashboard():
-    jobs = scheduler.get_jobs()
+    jobs = current_app.apscheduler.get_jobs()
     return render_template("dashboard.html", jobs=jobs)
+    # return render_template("empty.html", content="asd")
 
 @main_blueprint.route("/add-test-date")
 def add_test_date_job():
     fire_datetime = datetime.now() + timedelta(minutes=5)
-    job_response = scheduler.add_job(
+    job_response = current_app.apscheduler.add_job(
         id="date_job",
         func=date_func,
         args=[generate_random_id()],
@@ -109,7 +110,7 @@ def add_test_date_job():
 
 @main_blueprint.route("/add-test-interval")
 def add_test_interval_job():
-    job_response = scheduler.add_job(
+    job_response = current_app.apscheduler.add_job(
         id="interval_job",
         func=interval_func,
         args=[generate_random_id()],
@@ -119,7 +120,7 @@ def add_test_interval_job():
 
 @main_blueprint.route("/add-test-cron")
 def add_test_cron_job():
-    job_response = scheduler.add_job(
+    job_response = current_app.apscheduler.add_job(
         id="cron_job",
         func=cron_func,
         args=[generate_random_id()],
@@ -134,29 +135,29 @@ def add_job():
         return render_template("job.html", form=form)
     if request.method == "POST":
         form_datas = request.form
-        # response = scheduler.add_job(**kwargs)
+        # response = current_app.apscheduler.add_job(**kwargs)
         return render_template("empty.html", content=form_datas)
     response = "Something Went Wrong!!!!"
     return render_template("empty.html", content=response)
 
 @main_blueprint.route("/<job_id>/run")
 def run_job(job_id):
-    response = scheduler.get_job(job_id).func(manual=True)
+    response = current_app.apscheduler.get_job(job_id).func(manual=True)
     return render_template("empty.html", content=response)
 
 @main_blueprint.route("/<job_id>/pause")
 def pause_job(job_id):
-    response = scheduler.get_job(job_id).pause()
+    response = current_app.apscheduler.get_job(job_id).pause()
     return render_template("empty.html", content=response)
 
 @main_blueprint.route("/<job_id>/resume")
 def resume_job(job_id):
-    response = scheduler.get_job(job_id).resume()
+    response = current_app.apscheduler.get_job(job_id).resume()
     return render_template("empty.html", content=response)
 
 @main_blueprint.route("/<job_id>/modify", methods=["GET", "POST"])
 def modify_job(job_id):
-    job = scheduler.get_job(job_id)
+    job = current_app.apscheduler.get_job(job_id)
     if request.method == "GET":
         if isinstance(job.trigger, CronTrigger):
             trigger_value = "cron"
@@ -178,7 +179,7 @@ def modify_job(job_id):
 
 @main_blueprint.route("/<job_id>/remove")
 def delete_job(job_id):
-    scheduler.get_job(job_id).remove()
+    current_app.apscheduler.get_job(job_id).remove()
     return render_template("empty.html", content="Job #"+job_id+" Removed")
 
 @main_blueprint.route("/login", methods=["GET", "POST"])
