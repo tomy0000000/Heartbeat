@@ -1,0 +1,13 @@
+[Unit]
+Description=uWSGI instance to serve TSkr
+After=network.target
+PartOf=TSkr-main.target
+
+[Service]
+WorkingDirectory=/var/www/TSkr
+Environment=FLASK_CONFIG=production
+; You can get $pyenv-uwsgi-abs-path by running `which uwsgi` when pipenv is activated
+ExecStart=$pyenv-uwsgi-abs-path --ini instance/uwsgi.ini
+
+[Install]
+WantedBy=multi-user.target

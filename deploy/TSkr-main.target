@@ -1,0 +1,6 @@
+[Unit]
+Description=TSkr Bootscript
+Requires=TSkr-client.service TSkr-core.service
+
+[Install]
+WantedBy=multi-user.target

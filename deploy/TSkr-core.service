@@ -1,0 +1,13 @@
+[Unit]
+Description=Core server of TSkr
+After=network.target
+PartOf=TSkr-main.target
+
+[Service]
+WorkingDirectory=/var/www/TSkr
+User=$username
+; You can get $pyenv-uwsgi-abs-path by running `which python` when pipenv is activated
+ExecStart=$pyenv-python-abs-path app/core.py
+
+[Install]
+WantedBy=multi-user.target
