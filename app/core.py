@@ -42,7 +42,7 @@ class SchedulerService(rpyc.Service):
         scheduler.start(paused)
 
 import logging
-logging.basicConfig(filename="log/core.log", level=logging.DEBUG)
+logging.basicConfig(filename="log/core.log", level=logging.INFO)
 
 if __name__ == "__main__":
     scheduler = BackgroundScheduler()

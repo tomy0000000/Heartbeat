@@ -8,11 +8,10 @@ class Config:
     """Universal Config"""
     DEBUG = False
     TESTING = False
+    CORE_SERVICE_PORT = 4792
     PREFERRED_URL_SCHEME = "https"
-    if "SERVER_NAME" in os.environ:
-        SERVER_NAME = os.environ.get("SERVER_NAME")
-    if "APPLICATION_ROOT" in os.environ:
-        APPLICATION_ROOT = os.environ.get("APPLICATION_ROOT")
+    SERVER_NAME = os.environ.get("SERVER_NAME") or None
+    APPLICATION_ROOT = os.environ.get("APPLICATION_ROOT") or None
     SECRET_KEY = os.environ.get("SECRET_KEY") or str(uuid.uuid4())
     SQLALCHEMY_ENGINE_OPTIONS = {
         "pool_recycle": 300
@@ -52,13 +51,12 @@ class ProductionConfig(Config):
     @classmethod
     def init_app(cls, app):
         Config.init_app(app)
-        with app.app_context():
-            app.config["SCHEDULER_JOBSTORES"] = {
-                "default": {
-                    "type": "sqlalchemy",
-                    "url": cls.SQLALCHEMY_DATABASE_URI
-                }
+        app.config["SCHEDULER_JOBSTORES"] = {
+            "default": {
+                "type": "sqlalchemy",
+                "url": cls.SQLALCHEMY_DATABASE_URI
             }
+        }
 
 class UnixConfig(ProductionConfig):
     @classmethod

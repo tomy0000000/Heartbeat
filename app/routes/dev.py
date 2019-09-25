@@ -3,7 +3,6 @@ import os
 import sys
 import signal
 from flask import Blueprint, current_app, request, render_template, url_for
-from .. import login_manager
 from ..helper import send_notification
 dev_blueprint = Blueprint("dev", __name__)
 

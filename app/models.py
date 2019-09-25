@@ -3,7 +3,7 @@ import codecs
 import os
 from datetime import datetime
 from flask_login import UserMixin
-from . import db
+from . import db, bcrypt
 
 def generate_random_id():
     return codecs.encode(os.urandom(16), "hex").decode()
@@ -23,8 +23,9 @@ class Users(UserMixin, db.Model):
         return "<users %r>" %self.username
     def get_id(self):
         return self.username
-    def valid_password(self, password):
-        return self.password == password
+    def check_password(self, password):
+        """Return True if provided password is valid to login"""
+        return bcrypt.check_password_hash(self._password_hash, password)
 
 class Notification(db.Model):
     """

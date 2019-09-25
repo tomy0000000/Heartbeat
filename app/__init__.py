@@ -7,6 +7,7 @@ import logging.config
 from apscheduler.schedulers import SchedulerAlreadyRunningError
 from flask import Flask
 from flask_apscheduler import APScheduler
+from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
@@ -20,9 +21,8 @@ naming_convention = {
     "pk": "pk_%(table_name)s"
 }
 
-# core = rpyc.connect("localhost", 4792, config={"allow_public_attrs" : True})
 metadata = MetaData(naming_convention=naming_convention)
-# scheduler = APScheduler(core.root)                          # flask_apscheduler
+bcrypt = Bcrypt()                                           # flask_bcrypt
 login_manager = LoginManager()                              # flask_login
 db = SQLAlchemy(metadata=metadata)                          # flask_sqlalchemy
 
@@ -33,36 +33,52 @@ def create_app(config_name):
         with app.open_instance_resource("logging.cfg", "r") as json_file:
             logging.config.dictConfig(json.load(json_file))
 
-    db.init_app(app)
-    app.db = db
     config[config_name].init_app(app)
+    bcrypt.init_app(app)
     login_manager.init_app(app)
+    app.db = db
 
     # This will only run in uwsgi prefork mode
     try:
         import uwsgi
         from uwsgidecorators import postfork
-        # @postfork
-        # def connect_to_database():
-        #     db.init_app(app)
-        #     app.db = db
-        #     print("worker #{}: database connected".format(uwsgi.worker_id()))
         @postfork
-        def start_one_scheduler():
-            core = rpyc.connect("localhost", 4792, config={"allow_public_attrs" : True})
+        def connect_to_database():
+            db.init_app(app)
+            app.logger.info("worker #{}: Database Connected".format(uwsgi.worker_id()))
+        @postfork
+        def connect_to_scheduler():
+            core = rpyc.connect("localhost", app.config["CORE_SERVICE_PORT"], config={"allow_public_attrs" : True})
             scheduler = APScheduler(core.root)
             if uwsgi.worker_id() == 1:
                 scheduler.init_app(app)
                 scheduler.start()
-                print("Worker #{}: Trigger Scheduler Start".format(uwsgi.worker_id()))
+                app.logger.info("Worker #{}: Trigger Scheduler Start".format(uwsgi.worker_id()))
             else:
                 app.apscheduler = scheduler
-                print("Worker #{}: Established Connection".format(uwsgi.worker_id()))
+                app.logger.info("Worker #{}: Scheduler Connected".format(uwsgi.worker_id()))
     except ImportError:
-        pass
+        app.logger.info("Running without uwsgi")
+        db.init_app(app)
+        app.logger.info("Database Connected to {}".format(app.config["SQLALCHEMY_DATABASE_URI"]))
+        scheduler = APScheduler()
+        scheduler.init_app(app)
+        scheduler.start()
+        app.logger.info("Local Scheduler Started")
 
-    from .routes.main import main_blueprint
-    app.register_blueprint(main_blueprint)
     from .routes.dev import dev_blueprint
     app.register_blueprint(dev_blueprint)
+
+    from .routes.example_task import example_task_blueprint
+    app.register_blueprint(example_task_blueprint, url_prefix="/example_task")
+
+    from .routes.job import job_blueprint
+    app.register_blueprint(job_blueprint, url_prefix="/job")
+
+    from .routes.login import login_blueprint
+    app.register_blueprint(login_blueprint, url_prefix="/login")
+
+    from .routes.main import main_blueprint
+    app.register_blueprint(main_blueprint, url_prefix="/main")
+
     return app

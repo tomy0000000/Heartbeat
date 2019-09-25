@@ -41,7 +41,7 @@ python-dotenv = "*"
 flask-migrate = "*"
 uwsgi = "*"
 rpyc = "*"
-systemd = "*"
+flask-bcrypt = "*"
 
 [requires]
 python_version = "3.7"
