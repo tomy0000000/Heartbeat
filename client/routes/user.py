@@ -20,14 +20,19 @@ def login():
         session["alert_type"] = "success"
         return redirect(url_for("main.dashboard"))
     form = LoginForm()
-    error = None
+    alert = session.pop("login_message_body", None)
+    alert_type = session.pop("login_message_type", None)
     if form.validate_on_submit():
         query_user = Users.query.filter_by(username=form.username.data).first()
         if query_user and query_user.check_password(form.password.data):
             login_user(query_user)
             return redirect(url_for("main.dashboard"))
-        error = "Invalid username or password."
-    return render_template("login.html", form=form, error=error)
+        alert = "Invalid username or password."
+        alert_type = "warning"
+    return render_template("login.html",
+                           form=form,
+                           alert=alert,
+                           alert_type=alert_type)
 
 @user_blueprint.route("/logout")
 @login_required

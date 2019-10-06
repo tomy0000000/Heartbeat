@@ -1,4 +1,4 @@
-"""Config loader of TSkr"""
+"""Config loader of Heartbeat Client"""
 import os
 import uuid
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
@@ -47,18 +47,13 @@ class TestingConfig(Config):
         Config.init_app(app)
 
 class ProductionConfig(Config):
+    """Config for Production Deployment"""
     SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL") or \
         "sqlite:///" + os.path.join(basedir, "data.sqlite")
 
     @classmethod
     def init_app(cls, app):
         Config.init_app(app)
-        app.config["SCHEDULER_JOBSTORES"] = {
-            "default": {
-                "type": "sqlalchemy",
-                "url": cls.SQLALCHEMY_DATABASE_URI
-            }
-        }
 
 class UnixConfig(ProductionConfig):
     @classmethod

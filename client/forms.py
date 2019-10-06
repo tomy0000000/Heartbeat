@@ -1,4 +1,4 @@
-"""Forms of TSkr"""
+"""Forms"""
 import wtforms
 from flask_wtf import FlaskForm
 
@@ -22,7 +22,7 @@ class JobForm(FlaskForm):
         wtforms.validators.InputRequired(),
         wtforms.validators.Length(min=3, max=10)
     ])
-    func = wtforms.StringField("Function")
+    func = wtforms.SelectField("Function")
     args = wtforms.StringField("Arguments")
     kwargs = wtforms.StringField("Keyword Arguments")
     coalesce = wtforms.BooleanField("Coalesce")
@@ -31,6 +31,7 @@ class JobForm(FlaskForm):
         ("date", "Date"),
         ("interval", "Interval")
     ])
+    # Implement Dynamic Trigger Args Fields
     executor = wtforms.StringField("Executor")
     misfire_grace_time = wtforms.IntegerField("Misfire Grace Time")
     max_instances = wtforms.IntegerField("Max Instances")

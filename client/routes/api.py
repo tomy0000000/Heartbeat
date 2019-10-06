@@ -10,14 +10,19 @@ def get_tasks():
 @api_blueprint.route("/<job_id>/run")
 def job_run(job_id):
     response = current_app.apscheduler.get_job(job_id).func(manual=True)
-    return jsonify(response)
+    return jsonify(str(response))
 
 @api_blueprint.route("/<job_id>/pause")
 def job_pause(job_id):
     response = current_app.apscheduler.get_job(job_id).pause()
-    return jsonify(response)
+    return jsonify(str(response))
 
 @api_blueprint.route("/<job_id>/resume")
 def job_resume(job_id):
     response = current_app.apscheduler.get_job(job_id).resume()
-    return jsonify(response)
+    return jsonify(str(response))
+
+@api_blueprint.route("/<job_id>/remove")
+def job_remove(job_id):
+    current_app.apscheduler.get_job(job_id).remove()
+    return jsonify("Job #{} Removed".format(job_id))

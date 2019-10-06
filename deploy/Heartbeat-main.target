@@ -1,0 +1,6 @@
+[Unit]
+Description=Heartbeat Bootscript
+Requires=Heartbeat-client.service Heartbeat-core.service
+
+[Install]
+WantedBy=multi-user.target

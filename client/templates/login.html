@@ -1,24 +1,20 @@
 {% extends "base.html" %}
 {% set title = "Login" %}
+
 {% block script %}
 <script type="text/javascript" src="{{ url_for('static', filename='js/login.js') }}"></script>
 {% endblock %}
+
 {% block content %}
 <div class="jumbotron">
     <h1 id="headline" class="display-4">Welcome!</h1>
-    {% if notes %}
-    <p id="notes" class="lead">{{ notes }}</p>
-    {% endif %}
     <form id="" name="" class="needs-validation" method="POST" novalidate>
         {{ form.csrf_token }}
         <div class="form-group">
             {{ form.username.label }}
-            {% if error or form.username.errors|length > 0 %}
+            {% if form.username.errors|length > 0 %}
             {{ form.username(class="form-control is-invalid") }}
             <div class="invalid-feedback">
-                {% if error %}
-                {{ error }}
-                {% endif %}
                 {% for error in form.username.errors %}
                 {{ error }}
                 {% if not loop.last %}<br>{% endif %}
@@ -30,12 +26,9 @@
         </div>
         <div class="form-group">
             {{ form.password.label }}
-            {% if error or form.password.errors|length > 0 %}
+            {% if form.password.errors|length > 0 %}
             {{ form.password(class="form-control is-invalid") }}
             <div class="invalid-feedback">
-                {% if error %}
-                {{ error }}
-                {% endif %}
                 {% for error in form.password.errors %}
                 {{ error }}
                 {% if not loop.last %}<br>{% endif %}

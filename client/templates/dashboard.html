@@ -22,19 +22,19 @@
             <td class="align-middle">{{ job.trigger }}</td>
             <td class="align-middle">{{ job.next_run_time }}</td>
             <td class="align-middle">
-                <a href="/TSkr/{{ job.id }}/run" class="btn btn-primary" role="button">
+                <a href="{{ url_for('api.job_run', job_id=job.id) }}" class="btn btn-primary" role="button">
                     <i class="fas fa-bolt fa-lg"></i>
                 </a>
                 {% if job.next_run_time %}
-                <a href="/TSkr/{{ job.id }}/pause" class="btn btn-primary" role="button">
+                <a href="{{ url_for('api.job_pause', job_id=job.id) }}" class="btn btn-primary" role="button">
                     <i class="fas fa-pause fa-lg"></i>
                 </a>
                 {% else %}
-                <a href="/TSkr/{{ job.id }}/resume" class="btn btn-primary" role="button">
+                <a href="{{ url_for('api.job_resume', job_id=job.id) }}" class="btn btn-primary" role="button">
                     <i class="fas fa-play fa-lg"></i>
                 </a>
                 {% endif %}
-                <a href="/TSkr/{{ job.id }}/modify" class="btn btn-primary" role="button">
+                <a href="{{ url_for('job.modify', job_id=job.id) }}" class="btn btn-primary" role="button">
                     <i class="fas fa-edit fa-lg"></i>
                 </a>
                 <a href="#" class="btn btn-primary" role="button" data-toggle="modal" data-target="#RemoveJob{{ job.id }}Modal">
@@ -56,7 +56,7 @@
                             <div class="modal-footer">
                                 <div class="mx-auto">
                                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                                    <a href="/TSkr/{{ job.id }}/remove">
+                                    <a href="{{ url_for('api.job_remove', job_id=job.id) }}">
                                         <button type="button" class="btn btn-danger">Remove</button>
                                     </a>
                                 </div>

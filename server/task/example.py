@@ -22,7 +22,6 @@ def interval_func(session_id):
     logger.warning(session_id)
     logger.info(datetime.now())
 
-def cron_func(session_id):
+def cron_func():
     logger = logging.getLogger(name="testing_cron")
-    logger.warning(session_id)
     logger.info(datetime.now())

@@ -1,4 +1,4 @@
-"""Boot Script of TSkr"""
+"""Boot Script of Client App"""
 import os
 from dotenv import load_dotenv
 
@@ -17,7 +17,7 @@ import click
 from flask_migrate import Migrate, upgrade
 from client import create_app, db
 
-app = create_app(os.getenv("FLASK_CONFIG") or "default")
+app = create_app(os.getenv("FLASK_ENV") or "default")
 migrate = Migrate()
 with app.app_context():
     migrate.init_app(app, db, render_as_batch=True)

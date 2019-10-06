@@ -1,4 +1,4 @@
-"""Helper Functions for TSkr"""
+"""Helper Functions"""
 import os
 import requests
 from pushover_complete import PushoverAPI

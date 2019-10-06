@@ -1,4 +1,4 @@
-"""Initialization of TSkr"""
+"""Initialize Client App"""
 import atexit
 import os
 import json
@@ -12,7 +12,7 @@ from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
 from sqlalchemy import MetaData
-from config import config
+from config_client import config
 
 naming_convention = {
     "ix": "ix_%(column_0_label)s",
@@ -39,7 +39,6 @@ def create_app(config_name):
     bcrypt.init_app(app)
     login_manager.init_app(app)
     csrf.init_app(app)
-    app.db = db
 
     # This will only run in uwsgi prefork mode
     try:
@@ -58,7 +57,6 @@ def create_app(config_name):
                 # scheduler.start()
                 # app.logger.info("Worker #{}: Trigger Scheduler Start".format(uwsgi.worker_id()))
             # else:
-            app.apscheduler = scheduler
             app.logger.info("Worker #{}: Scheduler Connected".format(uwsgi.worker_id()))
     except ImportError:
         app.logger.info("Running without uwsgi")
@@ -67,6 +65,9 @@ def create_app(config_name):
         core = rpyc.connect("localhost", app.config["CORE_SERVICE_PORT"], config={"allow_public_attrs" : True})
         scheduler = APScheduler(core.root)
         app.logger.info("Scheduler Connected")
+
+    app.db = db
+    app.apscheduler = scheduler
 
     from .routes.main import main_blueprint
     app.register_blueprint(main_blueprint)

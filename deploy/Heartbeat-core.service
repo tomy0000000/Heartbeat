@@ -1,13 +1,13 @@
 [Unit]
-Description=Core server of TSkr
+Description=Core server of Heartbeat
 After=network.target
-PartOf=TSkr-main.target
+PartOf=Heartbeat-main.target
 
 [Service]
-WorkingDirectory=/var/www/TSkr
+WorkingDirectory=/var/www/Heartbeat
 User=$username
 ; You can get $pyenv-uwsgi-abs-path by running `which python` when pipenv is activated
-ExecStart=$pyenv-python-abs-path app/core.py
+ExecStart=$pyenv-python-abs-path core.py
 
 [Install]
 WantedBy=multi-user.target
