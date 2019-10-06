@@ -2,6 +2,17 @@
 import wtforms
 from flask_wtf import FlaskForm
 
+class LoginForm(FlaskForm):
+    username = wtforms.StringField("Username", validators=[
+        wtforms.validators.InputRequired(),
+        wtforms.validators.Length(min=3, max=20)
+    ])
+    password = wtforms.PasswordField("Password", validators=[
+        wtforms.validators.InputRequired(),
+        wtforms.validators.Length(min=3, max=20)
+    ])
+    submit = wtforms.SubmitField("Sign In")
+
 class JobForm(FlaskForm):
     id = wtforms.StringField("Job ID", validators=[
         wtforms.validators.InputRequired(),
@@ -26,14 +37,3 @@ class JobForm(FlaskForm):
     next_run_time = wtforms.DateTimeField("Next Run Time")
     type = wtforms.HiddenField("Type")
     submit = wtforms.SubmitField("Apply")
-
-class LoginForm(FlaskForm):
-    username = wtforms.StringField("Username", validators=[
-        wtforms.validators.InputRequired(),
-        wtforms.validators.Length(min=3, max=10)
-    ])
-    password = wtforms.PasswordField("Password", validators=[
-        wtforms.validators.InputRequired(),
-        wtforms.validators.Length(min=3, max=10)
-    ])
-    submit = wtforms.SubmitField("Sign In")

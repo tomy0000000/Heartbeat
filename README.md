@@ -1,16 +1,16 @@
-# TSkr
+# Heartbeat💓
 
-TSkr is a web-based scheduler executer, features simple user interface for task managing.
+Heartbeat is a task manager/scheduler/executer, features multiple interfaces for managing.
 
-The core is build on top of [APScheduler](https://github.com/agronholm/apscheduler) with the assist of [Flask-APScheduler](https://github.com/viniciuschiele/flask-apscheduler).
+The core is build on top of [APScheduler](https://github.com/agronholm/apscheduler) & [RPyC](https://github.com/tomerfiliba/rpyc).
 
 ## Installation
 
 * Clone repository
 
 ```bash
-git clone https://github.com/tomy0000000/TSkr.git
-cd TSkr
+git clone https://github.com/tomy0000000/Heartbeat.git
+cd Heartbeat
 ```
 
 * Install Packages (pipenv is suggested)
@@ -28,17 +28,17 @@ mkdir instance
 cd deploy
 cp uwsgi.ini ../instance/uwsgi.ini
 # Following Path fits for Ubuntu
-(sudo) cp TSkr-client.service /etc/systemd/system
-(sudo) cp TSkr-core.service /etc/systemd/system
-(sudo) cp TSkr-main.target /etc/systemd/system
+(sudo) cp Heartbeat-client.service /etc/systemd/system
+(sudo) cp Heartbeat-core.service /etc/systemd/system
+(sudo) cp Heartbeat-main.target /etc/systemd/system
 ````
 
-* Edit `TSkr-client.service `, `TSkr-core.service`
+* Edit `Heartbeat-client.service`, `Heartbeat-core.service`
 
 * Add Environmental Variables
 
 ```python
-# /var/www/TSkr/.env
+# /var/www/Heartbeat/.env
 SERVER_NAME=
 SECRET_KEY=
 DATABASE_URL=
@@ -50,10 +50,10 @@ DATABASE_URL=
 
 ```bash
 (sudo) systemctl daemon-reload
-(sudo) systemctl enable TSkr-client.service
-(sudo) systemctl enable TSkr-core.service
-(sudo) systemctl enable TSkr-main.target
-(sudo) systemctl start TSkr-main.target
+(sudo) systemctl enable Heartbeat-client.service
+(sudo) systemctl enable Heartbeat-core.service
+(sudo) systemctl enable Heartbeat-main.target
+(sudo) systemctl start Heartbeat-main.target
 ```
 
 

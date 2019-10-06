@@ -11,9 +11,20 @@ def generate_random_id():
 class Users(UserMixin, db.Model):
     __tablename__ = "users"
     username = db.Column(db.String(30), nullable=False, primary_key=True)
-    password = db.Column(db.String(30), nullable=False, server_default=None, unique=False)
-    pushover_key = db.Column(db.String(40), nullable=False, server_default=None, unique=False)
-    youtube_user_token = db.Column(db.String(40), nullable=False, server_default=None, unique=False)
+    _password_hash = db.Column(db.String(128), nullable=False, unique=False)
+    pushover_key = db.Column(db.String(40), unique=False)
+    youtube_user_token = db.Column(db.String(40), unique=False)
+    @property
+    def password(self):
+        """Password Property"""
+        raise AttributeError("Password is not a readable attribute")
+    @password.setter
+    def password(self, password):
+        if len(password) < 6:
+            raise ValueError("Password must be longer than 6 characters")
+        if len(password) > 30:
+            raise ValueError("Password must be shorter than 30 characters")
+        self._password_hash = bcrypt.generate_password_hash(password)
     def __init__(self, username, password, pushover_key=None, youtube_user_token=None):
         self.username = username
         self.password = password
@@ -21,6 +32,9 @@ class Users(UserMixin, db.Model):
         self.youtube_user_token = youtube_user_token
     def __repr__(self):
         return "<users %r>" %self.username
+    def is_authenticated(self):
+        # TODO
+        return True
     def get_id(self):
         return self.username
     def check_password(self, password):
@@ -51,3 +65,10 @@ class Notification(db.Model):
         self.response = response
     def __repr__(self):
         return "<notification %r>" %self.id
+
+class APShedulerJobs(db.Model):
+    """A Dummy Model for Flask Migrate"""
+    __tablename__ = "apscheduler_jobs"
+    id = db.Column(db.String(32), nullable=False, primary_key=True)
+    next_run_time = db.Column(db.Float(64), index=True)
+    job_state = db.Column(db.LargeBinary, nullable=False)

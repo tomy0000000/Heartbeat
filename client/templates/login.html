@@ -1,9 +1,9 @@
-{% extends "layout.html" %}
-{% set page_title = "Login" %}
-{% block scripts %}
+{% extends "base.html" %}
+{% set title = "Login" %}
+{% block script %}
 <script type="text/javascript" src="{{ url_for('static', filename='js/login.js') }}"></script>
 {% endblock %}
-{% block body %}
+{% block content %}
 <div class="jumbotron">
     <h1 id="headline" class="display-4">Welcome!</h1>
     {% if notes %}

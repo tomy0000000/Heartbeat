@@ -1,0 +1,49 @@
+{% import 'widgets/alert.html' as alert_widget %}
+{% import 'widgets/dev_test_ribbon.html' as ribbon %}
+{% import 'widgets/navbar.html' as navbar %}
+{% import 'widgets/stylesheets.html' as stylesheets %}
+{% import 'widgets/scripts.html' as scripts %}
+<!DOCTYPE html>
+<html class="h-100">
+
+<head>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.png') }}">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, shrink-to-fit=no">
+    <title>Heartbeat - {{ title }}</title>
+    {{ stylesheets.stylesheets() }}
+    {{ ribbon.ribbon_css() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <!-- PAGE CSS -->
+    {% block style %}{% endblock %}
+    <!-- END PAGE CSS -->
+
+<body class="d-flex flex-column h-100">
+    {{ navbar.navbar(title, current_user) }}
+    <main role="main" class="flex-grow-1">
+        <!-- CONTAINER -->
+        <div id="content-container" class="container h-100">
+            {{ alert_widget.alert(alert, alert_type, alert_float) }}
+            <!-- CONTENT -->
+            {% block content %}{% endblock %}
+            <!-- END CONTENT -->
+        </div>
+        <!-- END CONTAINER -->
+    </main>
+    <!-- FOOTER -->
+    <footer class="footer mt-auto py-3">
+        <div class="container text-muted text-center">
+            <span class="line">Copyright © 2019 Tomy Hsieh.</span>
+            <span class="line">All rights reserved.</span>
+        </div>
+    </footer>
+    <!-- END FOOTER -->
+    {{ ribbon.ribbon_tag() }}
+    {{ scripts.scripts() }}
+    {# {{ moment.include_moment(no_js=True) }} #}
+    <!-- PAGE JS -->
+    {% block script %}{% endblock %}
+    <!-- END PAGE JS -->
+</body>
+
+</html>

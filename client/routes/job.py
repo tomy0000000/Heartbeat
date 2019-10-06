@@ -18,21 +18,6 @@ def add_job():
     response = "Something Went Wrong!!!!"
     return render_template("empty.html", content=response)
 
-@job_blueprint.route("/<job_id>/run")
-def run_job(job_id):
-    response = current_app.apscheduler.get_job(job_id).func(manual=True)
-    return render_template("empty.html", content=response)
-
-@job_blueprint.route("/<job_id>/pause")
-def pause_job(job_id):
-    response = current_app.apscheduler.get_job(job_id).pause()
-    return render_template("empty.html", content=response)
-
-@job_blueprint.route("/<job_id>/resume")
-def resume_job(job_id):
-    response = current_app.apscheduler.get_job(job_id).resume()
-    return render_template("empty.html", content=response)
-
 @job_blueprint.route("/<job_id>/modify", methods=["GET", "POST"])
 def modify_job(job_id):
     job = current_app.apscheduler.get_job(job_id)

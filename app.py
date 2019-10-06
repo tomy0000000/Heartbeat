@@ -9,13 +9,13 @@ if os.path.exists(dotenv_path):
 COV = None
 if os.environ.get("FLASK_COVERAGE"):
     import coverage
-    COV = coverage.coverage(branch=True, include="app/*")
+    COV = coverage.coverage(branch=True, include="client/*")
     COV.start()
 
 import sys
 import click
 from flask_migrate import Migrate, upgrade
-from app import create_app, db
+from client import create_app, db
 
 app = create_app(os.getenv("FLASK_CONFIG") or "default")
 migrate = Migrate()
@@ -51,6 +51,17 @@ def deploy():
     """Run deployment tasks."""
     # migrate database to latest revision
     upgrade()
+
+@app.cli.command()
+@click.option("-u", "--username", prompt="New Username")
+@click.option("-p", "--password", prompt=True, hide_input=True,
+              confirmation_prompt=True)
+def register(username, password):
+    """Register an Admin which can access website"""
+    from client.models import Users
+    new_user = Users(username, password)
+    db.session.add(new_user)
+    db.session.commit()
 
 if __name__ == "__main__":
     app.run()
