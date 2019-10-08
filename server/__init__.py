@@ -11,14 +11,26 @@ class SchedulerService(rpyc.Service):
         self._scheduler = BackgroundScheduler()
         self._scheduler.configure(**config)
         self._scheduler.start()
-        logging.info("Heartbeat Core Started")
+        self.logger = logging.getLogger("Heartbeat.core")
+        self.logger.info("Heartbeat Core Initalized")
+    def on_connect(self, conn):
+        self.logger.info("----------Begin New Client----------")
+        self.logger.info(conn)
+        self.logger.info("----------End New Client----------")
+        # code that runs when a connection is created
+        # (to init the service, if needed)
+        pass
+    def on_disconnect(self, conn):
+        # code that runs after the connection has already closed
+        # (to finalize the service, if needed)
+        pass
     def exposed_add_job(self, func, *args, **kwargs):
-        logging.info("----------Begin New Job----------")
-        # logging.info("ID: #{}".format(id))
-        logging.info("Function: {}".format(str(func)))
-        logging.info("*args: {}".format(str(args)))
-        logging.info("**kwargs: {}".format(str(dict(kwargs))))
-        logging.info("----------Begin New Job----------")
+        self.logger.info("----------Begin New Job----------")
+        # self.logger.info("ID: #{}".format(id))
+        self.logger.info("Function: %s", str(func))
+        self.logger.info("*args: %s", str(args))
+        self.logger.info("**kwargs: %s", str(dict(kwargs)))
+        self.logger.info("----------Eng New Job----------")
         return self._scheduler.add_job(func, *args, **kwargs)
     def exposed_modify_job(self, job_id, jobstore=None, **changes):
         return self._scheduler.modify_job(job_id, jobstore, **changes)
@@ -43,11 +55,11 @@ class SchedulerService(rpyc.Service):
         """A Shallow Function Kept to compatible with flask-apscheduler"""
         # self._scheduler.start(paused)
     def exposed_get_tasks(self):
+        """Return a list of schedule-able function"""
         tasks = []
         cloned_globals = globals()
         for name, ref in cloned_globals.items():
-            if callable(ref):
-                namespace = inspect.getmodule(ref).__name__
-                if namespace.startswith("server.task"):
-                    tasks.append("{}:{}".format(namespace, name))
+            namespace = inspect.getmodule(ref).__name__
+            if callable(ref) and namespace.startswith("server.task"):
+                tasks.append("{}:{}".format(namespace, name))
         return tasks
