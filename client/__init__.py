@@ -1,12 +1,9 @@
 """Initialize Client App"""
-import atexit
 import os
 import json
-import rpyc
 import logging.config
-from apscheduler.schedulers import SchedulerAlreadyRunningError
+import rpyc
 from flask import Flask
-from flask_apscheduler import APScheduler
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
@@ -28,6 +25,43 @@ login_manager = LoginManager()                              # flask_login
 db = SQLAlchemy(metadata=metadata)                          # flask_sqlalchemy
 csrf = CSRFProtect()                                        # flask_wtf
 
+def init_database(app, db, worker_id=None):
+    db.init_app(app)
+    app.logger.info(
+        "{}Database Connected".format(
+            "worker #{}: ".format(worker_id) if worker_id else ""
+        )
+    )
+    app.db = db
+
+def init_scheduler(app, worker_id=None):
+    connected = False
+    if app.config["CLIENT_SSL_KEYFILE"] and app.config["CLIENT_SSL_CERTFILE"]:
+        key_path = os.path.join(app.instance_path, app.config["CLIENT_SSL_KEYFILE"])
+        cert_path = os.path.join(app.instance_path, app.config["CLIENT_SSL_CERTFILE"])
+        if os.path.exists(key_path) and os.path.exists(cert_path):
+            core = rpyc.ssl_connect(
+                "localhost",
+                app.config["CORE_SERVICE_PORT"],
+                config={"allow_public_attrs" : True},
+                keyfile=key_path,
+                certfile=cert_path
+            )
+            connected = True
+    if not connected:
+        core = rpyc.connect(
+            "localhost",
+            app.config["CORE_SERVICE_PORT"],
+            config={"allow_public_attrs" : True}
+        )
+    app.logger.info(
+        "{}Scheduler Connected with{} SSL".format(
+            "worker #{}: ".format(worker_id) if worker_id else "",
+            "" if connected else "out"
+        )
+    )
+    app.scheduler = core.root
+
 def create_app(config_name):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_object(config[config_name])
@@ -40,34 +74,18 @@ def create_app(config_name):
     login_manager.init_app(app)
     csrf.init_app(app)
 
-    # This will only run in uwsgi prefork mode
+    # Make sure connection are established per-worker
     try:
         import uwsgi
         from uwsgidecorators import postfork
         @postfork
-        def connect_to_database():
-            db.init_app(app)
-            app.logger.info("worker #{}: Database Connected".format(uwsgi.worker_id()))
-        @postfork
-        def connect_to_scheduler():
-            core = rpyc.connect("localhost", app.config["CORE_SERVICE_PORT"], config={"allow_public_attrs" : True})
-            scheduler = APScheduler(core.root)
-            # if uwsgi.worker_id() == 1:
-                # scheduler.init_app(app)
-                # scheduler.start()
-                # app.logger.info("Worker #{}: Trigger Scheduler Start".format(uwsgi.worker_id()))
-            # else:
-            app.logger.info("Worker #{}: Scheduler Connected".format(uwsgi.worker_id()))
+        def establish_connection():
+            init_database(app, db, uwsgi.worker_id())
+            init_scheduler(app, uwsgi.worker_id())
     except ImportError:
         app.logger.info("Running without uwsgi")
-        db.init_app(app)
-        app.logger.info("Database Connected")
-        core = rpyc.connect("localhost", app.config["CORE_SERVICE_PORT"], config={"allow_public_attrs" : True})
-        scheduler = APScheduler(core.root)
-        app.logger.info("Scheduler Connected")
-
-    app.db = db
-    app.apscheduler = scheduler
+        init_database(app, db)
+        init_scheduler(app)
 
     from .routes.main import main_blueprint
     app.register_blueprint(main_blueprint)

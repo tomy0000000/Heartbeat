@@ -8,7 +8,7 @@ main_blueprint = Blueprint("main", __name__)
 def dashboard():
     alert = session.pop("alert", None)
     alert_type = session.pop("alert_type", None)
-    jobs = current_app.apscheduler.get_jobs()
+    jobs = current_app.scheduler.get_jobs()
     return render_template("dashboard.html",
                            jobs=jobs,
                            alert=alert,

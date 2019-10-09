@@ -8,17 +8,17 @@ class Config:
     """Universal Config"""
     DEBUG = False
     TESTING = False
-    CORE_SERVICE_PORT = 4792
     PREFERRED_URL_SCHEME = "https"
-    if "SERVER_NAME" in os.environ:
-        SERVER_NAME = os.environ.get("SERVER_NAME")
-    if "APPLICATION_ROOT" in os.environ:
-        APPLICATION_ROOT = os.environ.get("APPLICATION_ROOT")
+    SERVER_NAME = os.environ.get("CLIENT_SERVER_NAME") or None
+    APPLICATION_ROOT = os.environ.get("CLIENT_APPLICATION_ROOT") or "/"
     SECRET_KEY = os.environ.get("SECRET_KEY") or str(uuid.uuid4())
     SQLALCHEMY_ENGINE_OPTIONS = {
         "pool_recycle": 300
     }
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    CORE_SERVICE_PORT = 4792
+    CLIENT_SSL_KEYFILE = os.environ.get("CLIENT_SSL_KEYFILE") or None
+    CLIENT_SSL_CERTFILE = os.environ.get("CLIENT_SSL_CERTFILE") or None
     PUSHOVER_TOKEN = os.environ.get("PUSHOVER_TOKEN")
 
     @staticmethod

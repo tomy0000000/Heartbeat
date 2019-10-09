@@ -1,11 +1,9 @@
 {% extends "base.html" %}
-
 {% if job %}
 {% set title = "Modify Job" %}
 {% else %}
 {% set title = "Add Job" %}
 {% endif %}
-
 {% block stylesheet %}
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/dashboard.css') }}">
 {% endblock %}
@@ -59,9 +57,105 @@
         {% endif %}
         {{ form.coalesce.label(class="custom-control-label") }}
     </div>
+    <h1>{{ form.cron_trigger_args.label }}</h1>
     <div class="form-group">
-        {{ form.trigger.label }}
-        {{ form.trigger(class="form-control") }}
+        {{ form.cron_trigger_args.year.label }}
+        {{ form.cron_trigger_args.year(type="number", class="form-control", min="0", max="9999") }}
+    </div>
+    <div class="form-group">
+        {{ form.cron_trigger_args.month.label }}
+        {{ form.cron_trigger_args.month(type="number", class="form-control", min="1", max="12") }}
+    </div>
+    <div class="form-group">
+        {{ form.cron_trigger_args.day.label }}
+        {{ form.cron_trigger_args.day(type="number", class="form-control", min="1", max="31") }}
+    </div>
+    <div class="form-group">
+        {{ form.cron_trigger_args.week.label }}
+        {{ form.cron_trigger_args.week(type="number", class="form-control", min="1", max="53") }}
+    </div>
+    <div class="form-group">
+        {{ form.cron_trigger_args.day_of_week.label }}
+        {% for subfield in form.cron_trigger_args.day_of_week %}
+        <div class="custom-control custom-radio">
+            {{ subfield(class="custom-control-input") }}
+            {{ subfield.label(class="custom-control-label") }}
+        </div>
+        {% endfor %}
+    </div>
+    <div class="form-group">
+        {{ form.cron_trigger_args.hour.label }}
+        {{ form.cron_trigger_args.hour(type="number", class="form-control", min="0", max="23") }}
+    </div>
+    <div class="form-group">
+        {{ form.cron_trigger_args.minute.label }}
+        {{ form.cron_trigger_args.minute(type="number", class="form-control", min="0", max="59") }}
+    </div>
+    <div class="form-group">
+        {{ form.cron_trigger_args.second.label }}
+        {{ form.cron_trigger_args.second(type="number", class="form-control", min="0", max="59") }}
+    </div>
+    <div class="form-group">
+        {{ form.cron_trigger_args.start_date.label }}
+        {{ form.cron_trigger_args.start_date(type="datetime-local", class="form-control") }}
+    </div>
+    <div class="form-group">
+        {{ form.cron_trigger_args.end_date.label }}
+        {{ form.cron_trigger_args.end_date(type="datetime-local", class="form-control") }}
+    </div>
+    <div class="form-group">
+        {# form.cron_trigger_args.timezone.label #}
+        {# form.cron_trigger_args.timezone(type="datetime-local", class="form-control") #}
+    </div>
+    <div class="form-group">
+        {{ form.cron_trigger_args.jitter.label }}
+        {{ form.cron_trigger_args.jitter(type="number", class="form-control") }}
+    </div>
+    <h1>{{ form.date_trigger_args.label }}</h1>
+    <div class="form-group">
+        {{ form.date_trigger_args.run_date.label }}
+        {{ form.date_trigger_args.run_date(type="datetime-local", class="form-control") }}
+    </div>
+    <div class="form-group">
+        {# form.date_trigger_args.timezone.label #}
+        {# form.date_trigger_args.timezone(type="datetime-local", class="form-control") #}
+    </div>
+    <h1>{{ form.interval_trigger_args.label }}</h1>
+    <div class="form-group">
+        {{ form.interval_trigger_args.weeks.label }}
+        {{ form.interval_trigger_args.weeks(type="number", class="form-control") }}
+    </div>
+    <div class="form-group">
+        {{ form.interval_trigger_args.days.label }}
+        {{ form.interval_trigger_args.days(type="number", class="form-control") }}
+    </div>
+    <div class="form-group">
+        {{ form.interval_trigger_args.hours.label }}
+        {{ form.interval_trigger_args.hours(type="number", class="form-control") }}
+    </div>
+    <div class="form-group">
+        {{ form.interval_trigger_args.minutes.label }}
+        {{ form.interval_trigger_args.minutes(type="number", class="form-control") }}
+    </div>
+    <div class="form-group">
+        {{ form.interval_trigger_args.seconds.label }}
+        {{ form.interval_trigger_args.seconds(type="number", class="form-control") }}
+    </div>
+    <div class="form-group">
+        {{ form.interval_trigger_args.start_date.label }}
+        {{ form.interval_trigger_args.start_date(type="datetime-local", class="form-control") }}
+    </div>
+    <div class="form-group">
+        {{ form.interval_trigger_args.end_date.label }}
+        {{ form.interval_trigger_args.end_date(type="datetime-local", class="form-control") }}
+    </div>
+    <div class="form-group">
+        {# form.interval_trigger_args.timezone.label #}
+        {# form.interval_trigger_args.timezone(type="datetime-local", class="form-control") #}
+    </div>
+    <div class="form-group">
+        {{ form.interval_trigger_args.jitter.label }}
+        {{ form.interval_trigger_args.jitter(type="number", class="form-control") }}
     </div>
     <div class="form-group">
         {{ form.executor.label }}
@@ -94,6 +188,14 @@
         {% else %}
         {{ form.next_run_time(type="datetime-local", class="form-control") }}
         {% endif %}
+    </div>
+    <div class="custom-control custom-switch">
+        {% if job and job.replace_existing %}
+        {{ form.replace_existing(class="custom-control-input", checked="") }}
+        {% else %}
+        {{ form.replace_existing(class="custom-control-input") }}
+        {% endif %}
+        {{ form.replace_existing.label(class="custom-control-label") }}
     </div>
     {{ form.csrf_token }}
     {{ form.type }}

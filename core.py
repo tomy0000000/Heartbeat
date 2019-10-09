@@ -15,11 +15,12 @@ from config_server import (
 logging.config.dictConfig(LOGGING_CONFIG)
 
 if __name__ == "__main__":
-    key_path = os.path.join(os.path.dirname(__file__), "instance", SERVER_SSL_KEYFILE)
-    cert_path = os.path.join(os.path.dirname(__file__), "instance", SERVER_SSL_CERTFILE)
-    if os.path.exists(key_path) and os.path.exists(cert_path):
-        authenticator = SSLAuthenticator(key_path, cert_path)
-        logging.info("SSL Activated")
+    if SERVER_SSL_KEYFILE and SERVER_SSL_CERTFILE:
+        key_path = os.path.join(os.path.dirname(__file__), "instance", SERVER_SSL_KEYFILE)
+        cert_path = os.path.join(os.path.dirname(__file__), "instance", SERVER_SSL_CERTFILE)
+        if os.path.exists(key_path) and os.path.exists(cert_path):
+            authenticator = SSLAuthenticator(key_path, cert_path)
+            logging.info("SSL Activated")
     else:
         authenticator = None
     server = ThreadedServer(

@@ -25,8 +25,7 @@ pipenv install
 
 ````bash
 mkdir instance
-cd deploy
-cp uwsgi.ini ../instance/uwsgi.ini
+cd instance && cp ../deploy/uwsgi.ini .
 # Following Path fits for Ubuntu
 (sudo) cp Heartbeat-client.service /etc/systemd/system
 (sudo) cp Heartbeat-core.service /etc/systemd/system
@@ -39,9 +38,14 @@ cp uwsgi.ini ../instance/uwsgi.ini
 
 ```python
 # /var/www/Heartbeat/.env
-SERVER_NAME=
+CLIENT_SERVER_NAME= # Optional
+CLIENT_APPLICATION_ROOT= # Optional
 SECRET_KEY=
 DATABASE_URL=
+SERVER_SSL_KEYFILE= # Optional
+SERVER_SSL_CERTFILE= # Optional
+CLIENT_SSL_KEYFILE= # Optional
+CLIENT_SSL_CERTFILE= # Optional
 ```
 
 ## Run

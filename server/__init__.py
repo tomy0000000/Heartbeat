@@ -14,15 +14,17 @@ class SchedulerService(rpyc.Service):
         self.logger = logging.getLogger("Heartbeat.core")
         self.logger.info("Heartbeat Core Initalized")
     def on_connect(self, conn):
+        # code that runs when a connection is created
+        # (to init the service, if needed)
         self.logger.info("----------Begin New Client----------")
         self.logger.info(conn)
         self.logger.info("----------End New Client----------")
-        # code that runs when a connection is created
-        # (to init the service, if needed)
-        pass
     def on_disconnect(self, conn):
         # code that runs after the connection has already closed
         # (to finalize the service, if needed)
+        self.logger.info("----------Begin Goodbye Client----------")
+        self.logger.info(conn)
+        self.logger.info("----------End Goodbye Client----------")
         pass
     def exposed_add_job(self, func, *args, **kwargs):
         self.logger.info("----------Begin New Job----------")
@@ -47,19 +49,15 @@ class SchedulerService(rpyc.Service):
     def exposed_get_jobs(self, jobstore=None):
         results = self._scheduler.get_jobs(jobstore)
         return results
-    def exposed_configure(self, gconfig={}, prefix="apscheduler.", **options):
-        """A Shallow Function Kept to compatible with flask-apscheduler"""
-        # self._scheduler.configure(gconfig, prefix, **options)
-        pass
-    def exposed_start(self, paused=False):
-        """A Shallow Function Kept to compatible with flask-apscheduler"""
-        # self._scheduler.start(paused)
     def exposed_get_tasks(self):
         """Return a list of schedule-able function"""
         tasks = []
         cloned_globals = globals()
         for name, ref in cloned_globals.items():
-            namespace = inspect.getmodule(ref).__name__
+            try:
+                namespace = inspect.getmodule(ref).__name__
+            except AttributeError:
+                continue
             if callable(ref) and namespace.startswith("server.task"):
                 tasks.append("{}:{}".format(namespace, name))
         return tasks

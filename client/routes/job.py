@@ -11,30 +11,32 @@ job_blueprint = Blueprint("job", __name__)
 @login_required
 def add_job():
     if request.method == "GET":
-        tasks = current_app.apscheduler.scheduler.get_tasks()
+        tasks = current_app.scheduler.get_tasks()
         form = JobForm(type="add")
         form.func.choices = [(task.split(".")[-1], task) for task in tasks]
         return render_template("job.html", form=form)
     if request.method == "POST":
         form_datas = request.form
         options = {
+            "trigger": form_datas["trigger"],
+            "args": form_datas["args"],
+            "kwargs": form_datas["kwargs"],
+            "id": form_datas["id"],
             "name": form_datas["name"],
-            # "trigger": form_datas["trigger"],
-            # "args": form_datas["args"],
-            # "kwargs": form_datas["kwargs"],
-            # "misfire_grace_time": form_datas["misfire_grace_time"],
-            # "coalesce": bool("coalesce" in form_datas),
-            # "max_instances": form_datas["max_instances"],
-            # "next_run_time": form_datas["next_run_time"],
-            # "executor": form_datas["executor"],
-            # "replace_existing": form_datas[""]
+            "misfire_grace_time": form_datas["misfire_grace_time"],
+            "coalesce": bool("coalesce" in form_datas),
+            "max_instances": form_datas["max_instances"],
+            "next_run_time": form_datas["next_run_time"],
+            "executor": form_datas["executor"],
+            "replace_existing": bool("replace_existing" in form_datas)
         }
-        response = current_app.apscheduler.add_job(
-            id=form_datas["id"],
-            func=form_datas["func"],
-            **options
-        )
-        session["alert"] = response
+        # response = current_app.scheduler.add_job(
+        #     form_datas["func"],
+        #     **options,
+        #     **trigger_args,
+        #     minute=5
+        # )
+        session["alert"] = form_datas
         session["alert_type"] = "success"
     else:
         session["alert"] = "Something Went Wrong!!!!"
@@ -44,17 +46,14 @@ def add_job():
 @job_blueprint.route("/explicit_add")
 @login_required
 def explicit_add():
-    options = {
-        "name": "test_cron",
-        "trigger": "cron"
-    }
-    response = current_app.apscheduler.add_job(
-        "test_cron", #id
+    response = current_app.scheduler.add_job(
         "server.task.example:cron_func", #func
-        minute=5,
-        # name="test_cron",
-        # trigger="cron"
-        **options
+        trigger="cron",
+        args=None,
+        kwargs=None,
+        id="test_cron",
+        name="test_cron",
+        minute=5
     )
     session["alert"] = str(response)
     session["alert_type"] = "success"
@@ -63,7 +62,7 @@ def explicit_add():
 @job_blueprint.route("/<job_id>/modify", methods=["GET", "POST"])
 @login_required
 def modify(job_id):
-    job = current_app.apscheduler.get_job(job_id)
+    job = current_app.scheduler.get_job(job_id)
     if request.method == "GET":
         if isinstance(job.trigger, CronTrigger):
             trigger_value = "cron"
