@@ -1,0 +1,6 @@
+.trigger-args-boxes {
+    background-color: var(--gray);
+    padding: 1rem;
+    border-radius: 1rem;
+    display: none;
+}

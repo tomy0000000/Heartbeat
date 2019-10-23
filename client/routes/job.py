@@ -10,38 +10,52 @@ job_blueprint = Blueprint("job", __name__)
 @job_blueprint.route("/add", methods=["GET", "POST"])
 @login_required
 def add_job():
-    if request.method == "GET":
-        tasks = current_app.scheduler.get_tasks()
-        form = JobForm(type="add")
-        form.func.choices = [(task.split(".")[-1], task) for task in tasks]
-        return render_template("job.html", form=form)
+    alert = session.pop("alert", None)
+    alert_type = session.pop("alert_type", None)
+    tasks = current_app.scheduler.get_tasks()
+    form = JobForm(type="add")
+    form.base_args.func.choices = [("", "")]+[(task, task.split(".")[-1]) for task in tasks]
     if request.method == "POST":
-        form_datas = request.form
-        options = {
-            "trigger": form_datas["trigger"],
-            "args": form_datas["args"],
-            "kwargs": form_datas["kwargs"],
-            "id": form_datas["id"],
-            "name": form_datas["name"],
-            "misfire_grace_time": form_datas["misfire_grace_time"],
-            "coalesce": bool("coalesce" in form_datas),
-            "max_instances": form_datas["max_instances"],
-            "next_run_time": form_datas["next_run_time"],
-            "executor": form_datas["executor"],
-            "replace_existing": bool("replace_existing" in form_datas)
-        }
-        # response = current_app.scheduler.add_job(
-        #     form_datas["func"],
-        #     **options,
-        #     **trigger_args,
-        #     minute=5
-        # )
-        session["alert"] = form_datas
-        session["alert_type"] = "success"
-    else:
-        session["alert"] = "Something Went Wrong!!!!"
-        session["alert_type"] = "warning"
-    return redirect(url_for("main.dashboard"))
+        if form.validate_on_submit():
+            current_app.logger.info("Form Validated")
+            valid_args = ["args", "kwargs", "coalesce", "trigger", "executor", "misfire_grace_time", "max_instances", "next_run_time", "replace_existing"]
+            valid_trigger = ["cron", "date", "interval"]
+            valid_trigger_args = {
+                "cron": ["day", "end_date", "hour", "jitter", "minute", "month", "second", "start_date", "timezone", "week", "year"],
+                "date": ["run_date", "timezone"],
+                "interval": ["weeks", "days", "hours", "minutes", "seconds", "start_date", "end_date", "timezone", "jitter"]
+            }
+
+            options = {
+                "id": form.base_args.job_id.data,
+                "name": form.base_args.job_name.data
+            }
+            trigger_args = {}
+            trigger = form.base_args.trigger.data
+            if trigger not in valid_trigger:
+                raise ValueError("Invalid Trigger")
+            for arg, val in form.data["base_args"].items():
+                if arg in valid_args and val:
+                    options[arg] = val
+            for arg, val in form.data["{}_trigger_args".format(trigger)].items():
+                if arg in valid_trigger_args[trigger] and val:
+                    trigger_args[arg] = val
+
+            # response = current_app.scheduler.add_job(
+            #     form_datas["func"],
+            #     **options,
+            #     **trigger_args,
+            # )
+            # session["alert"] = form.data
+            session["alert"] = {"func": form.base_args.func.data, **options, **trigger_args}
+            session["alert_type"] = "success"
+            return redirect(url_for("main.dashboard"))
+        alert = form.interval_trigger_args.errors
+        alert_type = "warning"
+    return render_template("job.html",
+                           form=form,
+                           alert=alert,
+                           alert_type=alert_type)
 
 @job_blueprint.route("/explicit_add")
 @login_required

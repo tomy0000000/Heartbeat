@@ -60,5 +60,18 @@ CLIENT_SSL_CERTFILE= # Optional
 (sudo) systemctl start Heartbeat-main.target
 ```
 
+## Local Development
 
+* Run Core Server
+
+```bash
+python core.py
+```
+
+* Run Client App (Execute in a different shell)
+
+```bash
+export FLASK_ENV=development
+flask run
+```
 
