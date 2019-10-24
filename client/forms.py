@@ -1,5 +1,4 @@
 """Forms"""
-import wtforms
 from wtforms.fields import (
     BooleanField,
     # DateTimeLocalField,
@@ -7,6 +6,7 @@ from wtforms.fields import (
     HiddenField,
     # IntegerField,
     PasswordField,
+    RadioField,
     SelectField,
     StringField,
     SubmitField
@@ -38,28 +38,23 @@ class JobBaseForm(FlaskForm):
     job_id = StringField("Job ID", validators=[
         InputRequired(), Length(min=3, max=10)
     ], render_kw={
-        "id": "job_id",
         "class": "form-control"
     })
     job_name = StringField("Job Name", validators=[
         InputRequired(), Length(min=3, max=10)
     ], render_kw={
-        "id": "job_name",
         "class": "form-control"
     })
     func = SelectField("Function", validators=[
         DataRequired()
     ], render_kw={
-        "id": "func",
         "class": "form-control"
     })
     args = StringField("Arguments", render_kw={
-        "id": "args",
         "class": "form-control",
         "readonly": ""
     })
     kwargs = StringField("Keyword Arguments", render_kw={
-        "id": "kwargs",
         "class": "form-control",
         "readonly": ""
     })
@@ -67,57 +62,110 @@ class JobBaseForm(FlaskForm):
         "class": "custom-control-input",
         "disabled": ""
     })
-    trigger = SelectField(
-        "Trigger",
-        render_kw={
-            "id": "trigger",
-            "class": "form-control",
-        },
-        choices=[
-            ("", ""),
-            ("cron", "Cron"),
-            ("date", "Date"),
-            ("interval", "Interval")
-        ], validators=[
-            DataRequired()
-        ])
-    executor = StringField("Executor")
+    trigger = RadioField("Trigger", validators=[
+        DataRequired()
+    ], choices=[
+        ("cron", "Cron"),
+        ("date", "Date"),
+        ("interval", "Interval")
+    ])
+    executor = StringField("Executor", validators=[
+        Optional()
+    ], render_kw={
+        "class": "form-control",
+        "readonly": ""
+    })
     misfire_grace_time = IntegerField("Misfire Grace Time", validators=[
         Optional()
-    ])
+    ], render_kw={
+        "class": "form-control",
+        "readonly": ""
+    })
     max_instances = IntegerField("Max Instances", validators=[
         Optional()
-    ])
+    ], render_kw={
+        "class": "form-control",
+        "readonly": ""
+    })
     next_run_time = DateTimeLocalField("Next Run Time", validators=[
         Optional()
-    ])
-    replace_existing = BooleanField("Replace Existing")
+    ], render_kw={
+        "class": "form-control",
+        "readonly": ""
+    }, format="%Y-%m-%dT%H:%M:%S")
+    replace_existing = BooleanField("Replace Existing", render_kw={
+        "class": "custom-control-input",
+        "disabled": ""
+    })
 
 class CronForm(FlaskForm):
-    year = IntegerField("Year"
-    #     , validators=[
-    #     wtforms.validators.NumberRange(min=None, max=9999)
-    # ]
-    )
-    month = IntegerField("Month")
-    day = IntegerField("Day")
-    week = IntegerField("Week")
-    day_of_week = wtforms.RadioField("Day of Week", choices=[
-        ("mon", "Monday"),
-        ("tue", "Tuesday"),
-        ("wed", "Wednesday"),
-        ("thu", "Thursday"),
-        ("fri", "Friday"),
-        ("sat", "Saturday"),
-        ("sun", "Sunday")
-    ])
-    hour = IntegerField("Hour")
-    minute = IntegerField("Minute")
-    second = IntegerField("Second")
-    start_date = DateTimeLocalField("Start Date")
-    end_date = DateTimeLocalField("End Date")
-    timezone = DateTimeLocalField("Timezone")
-    jitter = IntegerField("Jitter")
+    year = StringField("Year", render_kw={
+        "class": "form-control"
+    })
+    month = StringField("Month", render_kw={
+        "class": "form-control"
+    })
+    day = StringField("Day", render_kw={
+        "class": "form-control"
+    })
+    week = StringField("Week", render_kw={
+        "class": "form-control"
+    })
+    day_of_week = StringField("Day of Week", render_kw={
+        "class": "form-control"
+    })
+    hour = StringField("Hour", render_kw={
+        "class": "form-control"
+    })
+    minute = StringField("Minute", render_kw={
+        "class": "form-control"
+    })
+    second = StringField("Second", render_kw={
+        "class": "form-control"
+    })
+    start_date = DateTimeLocalField("Start Date", validators=[
+        Optional()
+    ], render_kw={
+        "class": "form-control",
+        "step": "1"
+    }, format="%Y-%m-%dT%H:%M:%S")
+    end_date = DateTimeLocalField("End Date", validators=[
+        Optional()
+    ], render_kw={
+        "class": "form-control",
+        "step": "1"
+    }, format="%Y-%m-%dT%H:%M:%S")
+    timezone = DateTimeLocalField("Timezone", validators=[
+        Optional()
+    ], render_kw={
+        "class": "form-control",
+        "readonly": ""
+    })
+    jitter = IntegerField("Jitter", validators=[
+        Optional()
+    ], render_kw={
+        "class": "form-control",
+        "readonly": ""
+    })
+    def validate(self):
+        param = [
+            self.year,
+            self.month,
+            self.day,
+            self.week,
+            self.day_of_week,
+            self.hour,
+            self.minute,
+            self.second
+        ]
+        for field in param:
+            if field.data:
+                return True
+        # Fallback to here means none of the fields is filled
+        self.day_of_week.errors = ["Fill at least one of them."]
+        for field in param:
+            field.errors = ["Fill at least one of them."]
+        return False
 
 class DateForm(FlaskForm):
     run_date = DateTimeLocalField("Run Date", validators=[
@@ -194,22 +242,20 @@ class IntervalForm(FlaskForm):
         "readonly": ""
     })
     def validate(self):
-        # results = False
-        results = True
-        current_app.logger.info("Interval Form Start Validating")
-        if not self.weeks.data \
-        and not self.days.data \
-        and not self.hours.data \
-        and not self.minutes.data \
-        and not self.seconds.data:
-            current_app.logger.info("Validate Failed")
-            results = False
-            for field in [self.weeks, self.days, self.hours, self.minutes, self.seconds]:
-                field.errors = "Fill at least one of them."
-                current_app.logger.info("{} errors set".format(field.name))
-                # current_app.logger.info("{}: {}".format(field.name, field.errors))
-                # field.errors.append("Fill at least one of them.")
-        return results
+        param = [
+            self.weeks,
+            self.days,
+            self.hours,
+            self.minutes,
+            self.seconds
+        ]
+        for field in param:
+            if field.data:
+                return True
+        # Fallback to here means none of the fields is filled
+        for field in param:
+            field.errors = ["Fill at least one of them."]
+        return False
 
 class JobForm(FlaskForm):
     base_args = FormField(JobBaseForm)
@@ -219,34 +265,20 @@ class JobForm(FlaskForm):
     type = HiddenField("Type")
     submit = SubmitField("Apply")
     def validate(self):
+        current_app.logger.info("----------BEGIN FORM VALIDATE----------")
         results = True
         if not FlaskForm.validate(self.base_args.form):
             current_app.logger.info("Base Form Not Validate")
             results = False
-        # current_app.logger.info("Cron: {}".format(FlaskForm.validate(self.cron_trigger_args.form)))
-        if self.base_args.trigger.data == "cron" and not FlaskForm.validate(self.cron_trigger_args.form):
+        if self.base_args.trigger.data == "cron" and not self.cron_trigger_args.validate(self):
+            current_app.logger.info("Cron Form Not Validate")
             results = False
-        # current_app.logger.info("Date: {}".format(FlaskForm.validate(self.date_trigger_args.form)))
-        if self.base_args.trigger.data == "date" and not FlaskForm.validate(self.date_trigger_args.form):
+        if self.base_args.trigger.data == "date" and not self.date_trigger_args.validate(self):
+            current_app.logger.info("Date Form Not Validate")
             results = False
-        current_app.logger.info(
-            "Interval FormField: {}".format(
-                # FlaskForm.validate(self.interval_trigger_args.form)
-                self.interval_trigger_args.validate(self)
-            )
-        )
-        current_app.logger.info(
-            "Interval Form: {}".format(
-                # FlaskForm.validate(self.interval_trigger_args.form)
-                self.interval_trigger_args.form.validate()
-            )
-        )
-        current_app.logger.info(
-            "Interval Form Flask: {}".format(
-                FlaskForm.validate(self.interval_trigger_args.form)
-                # self.interval_trigger_args.validate(self)
-            )
-        )
-        if self.base_args.trigger.data == "interval" and not FlaskForm.validate(self.interval_trigger_args.form):
+        if self.base_args.trigger.data == "interval" and not self.interval_trigger_args.validate(self):
+            current_app.logger.info("Interval Form Not Validate")
             results = False
+        current_app.logger.info("Final Results: {}".format(results))
+        current_app.logger.info("----------END FORM VALIDATE----------")
         return results

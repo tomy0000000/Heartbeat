@@ -18,19 +18,22 @@ function toggle_trigger_box(type) {
 }
 
 $(document).ready(function() {
-    var trigger_type = $("#trigger").val();
+    var trigger_type = $(".trigger:checked").val();
+    if ($(".trigger:checked").val()) {
+        $(".trigger:checked").parent().addClass("active")
+    }
     toggle_trigger_box(trigger_type);
-    $("#trigger").on("change", function(event) {
-        var trigger_type = $("#trigger").val();
+    $(".trigger").on("change", function(event) {
+        var trigger_type = $(this).val();
         toggle_trigger_box(trigger_type);
     });
 }).on("submit", "#job", function(event) {
     // Check Every Datetime Field
     $("input[type=datetime-local][step=1]").each(function(index, el) {
         if (($(this).val().match(/:/g) || []).length < 2) { // If Second is 0
-        $(this).val(function() {
-            return this.value + ":00"; // Add Second Paddings
-        })
-    }
+            $(this).val(function() {
+                return this.value + ":00"; // Add Second Paddings
+            })
+        }
     });
 });;

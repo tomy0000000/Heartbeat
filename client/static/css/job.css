@@ -1,6 +1,11 @@
 .trigger-args-boxes {
-    background-color: var(--gray);
+    background-color: var(--info);
     padding: 1rem;
     border-radius: 1rem;
     display: none;
+}
+
+#base_args-trigger {
+    padding: 0px;
+    /*border: 0px;*/
 }

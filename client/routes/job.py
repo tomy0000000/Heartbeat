@@ -41,19 +41,51 @@ def add_job():
                 if arg in valid_trigger_args[trigger] and val:
                     trigger_args[arg] = val
 
-            # response = current_app.scheduler.add_job(
-            #     form_datas["func"],
-            #     **options,
-            #     **trigger_args,
-            # )
-            # session["alert"] = form.data
-            session["alert"] = {"func": form.base_args.func.data, **options, **trigger_args}
-            session["alert_type"] = "success"
-            return redirect(url_for("main.dashboard"))
-        alert = form.interval_trigger_args.errors
-        alert_type = "warning"
+            try:
+                response = current_app.scheduler.add_job(
+                    form.base_args.func.data,
+                    **options,
+                    **trigger_args,
+                )
+                session["alert"] = {"func": form.base_args.func.data, **options, **trigger_args}
+                session["alert_type"] = "success"
+                return redirect(url_for("main.dashboard"))
+            except Exception as error:
+                alert = "{}: {}".format(type(error).__name__, error.args)
+                alert_type = "danger"
     return render_template("job.html",
                            form=form,
+                           alert=alert,
+                           alert_type=alert_type)
+
+@job_blueprint.route("/<job_id>/modify", methods=["GET", "POST"])
+@login_required
+def modify(job_id):
+    alert = session.pop("alert", None)
+    alert_type = session.pop("alert_type", None)
+    tasks = current_app.scheduler.get_tasks()
+    form = JobForm(type="modify")
+    form.base_args.func.choices = [("", "")]+[(task, task.split(".")[-1]) for task in tasks]
+    job = current_app.scheduler.get_job(job_id)
+    if request.method == "POST":
+        if form.validate_on_submit():
+            try:
+                # response = job.modify(**options, **trigger_args)
+                # session["alert"] = {**options, **trigger_args}
+                # session["alert_type"] = "success"
+                return redirect(url_for("main.dashboard"))
+            except Exception as error:
+                alert = "{}: {}".format(type(error).__name__, error.args)
+                alert_type = "danger"
+    if request.method == "GET":
+        form.base_args.job_id.data = job.id
+        form.base_args.job_name.data = job.name
+        form.base_args.func.data = job.func #Fixme
+        form.base_args.trigger.data = type(job.trigger).__name__.split(".")[2]
+        # job.next_run_time = job.next_run_time.strftime("%Y-%m-%dT%H:%m")
+    return render_template("job.html",
+                           form=form,
+                           job=job,
                            alert=alert,
                            alert_type=alert_type)
 
@@ -72,26 +104,3 @@ def explicit_add():
     session["alert"] = str(response)
     session["alert_type"] = "success"
     return redirect(url_for("main.dashboard"))
-
-@job_blueprint.route("/<job_id>/modify", methods=["GET", "POST"])
-@login_required
-def modify(job_id):
-    job = current_app.scheduler.get_job(job_id)
-    if request.method == "GET":
-        if isinstance(job.trigger, CronTrigger):
-            trigger_value = "cron"
-        elif isinstance(job.trigger, DateTrigger):
-            trigger_value = "date"
-        elif isinstance(job.trigger, IntervalTrigger):
-            trigger_value = "interval"
-        else:
-            trigger_value = ""
-        form = JobForm(trigger=trigger_value, type="modify")
-        job.next_run_time = job.next_run_time.strftime("%Y-%m-%dT%H:%m")
-        return render_template("job.html", form=form, job=job)
-    if request.method == "POST":
-        form_datas = request.form
-        # response = job.modify(**changes)
-        return render_template("empty.html", info=form_datas)
-    response = "Something Went Wrong!!!!"
-    return render_template("empty.html", info=response)
