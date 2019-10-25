@@ -1,10 +1,12 @@
 """Core Service of Hearbeat"""
+import os
+import importlib
 import inspect
 import logging
+from datetime import datetime
 import rpyc
 from rpyc.utils.server import ThreadedServer
 from apscheduler.schedulers.background import BackgroundScheduler
-from .task.example import date_func, interval_func, cron_func
 
 class SchedulerService(rpyc.Service):
     def __init__(self, **config):
@@ -25,10 +27,8 @@ class SchedulerService(rpyc.Service):
         self.logger.info("----------Begin Goodbye Client----------")
         self.logger.info(conn)
         self.logger.info("----------End Goodbye Client----------")
-        pass
     def exposed_add_job(self, func, *args, **kwargs):
         self.logger.info("----------Begin New Job----------")
-        # self.logger.info("ID: #{}".format(id))
         self.logger.info("Function: %s", str(func))
         self.logger.info("*args: %s", str(args))
         self.logger.info("**kwargs: %s", str(dict(kwargs)))
@@ -52,12 +52,18 @@ class SchedulerService(rpyc.Service):
     def exposed_get_tasks(self):
         """Return a list of schedule-able function"""
         tasks = []
-        cloned_globals = globals()
-        for name, ref in cloned_globals.items():
-            try:
-                namespace = inspect.getmodule(ref).__name__
-            except AttributeError:
+        for module_file in os.listdir(os.path.join(os.path.dirname(__file__), "task")):
+            if module_file == "__init__.py" or module_file[-3:] != ".py":
                 continue
-            if callable(ref) and namespace.startswith("server.task"):
-                tasks.append("{}:{}".format(namespace, name))
+            module_name = "server.task.{}".format(module_file[:-3])
+            module = importlib.import_module(module_name)
+            if not hasattr(module, "__all__"):
+                continue
+            for function_name in module.__all__:
+                function = getattr(module, function_name)
+                if not callable(function):
+                    continue
+                parameters = inspect.signature(function).parameters
+                parameters_str = ", ".join([str(val) for key, val in parameters.items()])
+                tasks.append("{}:{}({})".format(module_name, function_name, parameters_str))
         return tasks

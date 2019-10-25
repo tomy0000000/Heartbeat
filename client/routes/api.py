@@ -9,7 +9,7 @@ def get_tasks():
 
 @api_blueprint.route("/<job_id>/run")
 def job_run(job_id):
-    response = current_app.scheduler.get_job(job_id).func(manual=True)
+    response = current_app.scheduler.get_job(job_id).func()
     return jsonify(str(response))
 
 @api_blueprint.route("/<job_id>/pause")

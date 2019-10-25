@@ -33,7 +33,7 @@ $(document).ready(function() {
         if (($(this).val().match(/:/g) || []).length < 2) { // If Second is 0
             $(this).val(function() {
                 return this.value + ":00"; // Add Second Paddings
-            })
+            });
         }
     });
-});;
+});

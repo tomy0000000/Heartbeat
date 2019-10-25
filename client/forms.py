@@ -22,6 +22,9 @@ from wtforms.validators import (
     NumberRange,
     Optional
 )
+from wtforms.widgets.html5 import (
+    DateTimeLocalInput
+)
 from flask import current_app
 from flask_wtf import FlaskForm
 
@@ -36,12 +39,12 @@ class LoginForm(FlaskForm):
 
 class JobBaseForm(FlaskForm):
     job_id = StringField("Job ID", validators=[
-        InputRequired(), Length(min=3, max=10)
+        InputRequired(), Length(min=3, max=20)
     ], render_kw={
         "class": "form-control"
     })
     job_name = StringField("Job Name", validators=[
-        InputRequired(), Length(min=3, max=10)
+        InputRequired(), Length(min=3, max=20)
     ], render_kw={
         "class": "form-control"
     })
@@ -168,12 +171,18 @@ class CronForm(FlaskForm):
         return False
 
 class DateForm(FlaskForm):
-    run_date = DateTimeLocalField("Run Date", validators=[
+    # run_date = DateTimeLocalField("Run Date", validators=[
+    #     InputRequired()
+    # ], render_kw={
+    #     "class": "form-control",
+    #     "step": "1"
+    # }, format="%Y-%m-%dT%H:%M:%S")
+    run_date = StringField("Run Date", validators=[
         InputRequired()
-    ], render_kw={
+    ], widget=DateTimeLocalInput(), render_kw={
         "class": "form-control",
         "step": "1"
-    }, format="%Y-%m-%dT%H:%M:%S")
+    })
     timezone = DateTimeLocalField("Timezone", validators=[
         Optional()
     ], render_kw={

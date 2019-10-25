@@ -104,3 +104,8 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# Task Scripts
+server/task/*
+!server/task/__init__.py
+!server/task/example.py

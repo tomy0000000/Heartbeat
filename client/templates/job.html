@@ -133,7 +133,7 @@ display_error($("#interval_trigger_args-{{ field }}"), "{{ error|join('<br>')|sa
             <!-- second -->
             <div class="form-group col-4">
                 {{ form.cron_trigger_args.second.label }}
-                {{ form.cron_trigger_args.second(type="number", class="form-control", min="0", max="59") }}
+                {{ form.cron_trigger_args.second() }}
             </div>
             <!-- jitter -->
             <div class="form-group col-4">

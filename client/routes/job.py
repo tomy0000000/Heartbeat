@@ -1,4 +1,5 @@
 """Job Blueprint"""
+import sys
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
@@ -14,7 +15,7 @@ def add_job():
     alert_type = session.pop("alert_type", None)
     tasks = current_app.scheduler.get_tasks()
     form = JobForm(type="add")
-    form.base_args.func.choices = [("", "")]+[(task, task.split(".")[-1]) for task in tasks]
+    form.base_args.func.choices = [("", "")]+[(task.split("(")[0], task.split(".")[-1]) for task in tasks]
     if request.method == "POST":
         if form.validate_on_submit():
             current_app.logger.info("Form Validated")
@@ -25,7 +26,6 @@ def add_job():
                 "date": ["run_date", "timezone"],
                 "interval": ["weeks", "days", "hours", "minutes", "seconds", "start_date", "end_date", "timezone", "jitter"]
             }
-
             options = {
                 "id": form.base_args.job_id.data,
                 "name": form.base_args.job_name.data
@@ -40,8 +40,8 @@ def add_job():
             for arg, val in form.data["{}_trigger_args".format(trigger)].items():
                 if arg in valid_trigger_args[trigger] and val:
                     trigger_args[arg] = val
-
             try:
+                current_app.logger.info({"func": form.base_args.func.data, **options, **trigger_args})
                 response = current_app.scheduler.add_job(
                     form.base_args.func.data,
                     **options,
@@ -51,7 +51,8 @@ def add_job():
                 session["alert_type"] = "success"
                 return redirect(url_for("main.dashboard"))
             except Exception as error:
-                alert = "{}: {}".format(type(error).__name__, error.args)
+                alert = sys.exc_info()
+                # alert = "{}: {}".format(type(error).__name__, error.args)
                 alert_type = "danger"
     return render_template("job.html",
                            form=form,
@@ -81,7 +82,29 @@ def modify(job_id):
         form.base_args.job_id.data = job.id
         form.base_args.job_name.data = job.name
         form.base_args.func.data = job.func #Fixme
-        form.base_args.trigger.data = type(job.trigger).__name__.split(".")[2]
+        trigger = type(job.trigger).__name__.split(".")[2]
+        form.base_args.trigger.data = trigger
+        if trigger == "cron":
+            for field in job.trigger.fields:
+                getattr(form.cron_trigger_args, field.name).data = field
+            form.cron_trigger_args.jitter.data = job.trigger.jitter
+            form.cron_trigger_args.start_date.data = job.trigger.start_date
+            form.cron_trigger_args.end_date.data = job.trigger.end_date
+            # form.cron_trigger_args.timezone.data = job.trigger.timezone
+        elif trigger == "date":
+            pass
+        elif trigger == "interval":
+            form.interval_trigger_args.weeks.data = job.trigger.interval.days // 7
+            form.interval_trigger_args.days.data = job.trigger.interval.days % 7
+            form.interval_trigger_args.hours.data = job.trigger.interval.seconds // 3600
+            form.interval_trigger_args.minutes.data = job.trigger.interval.seconds % 3600 // 60
+            form.interval_trigger_args.seconds.data = job.trigger.interval.seconds % 60
+            form.interval_trigger_args.jitter.data = job.trigger.jitter
+            form.interval_trigger_args.start_date.data = job.trigger.start_date
+            form.interval_trigger_args.end_date.data = job.trigger.end_date
+            # form.interval_trigger_args.timezone.data = job.trigger.timezone
+        else:
+            pass
         # job.next_run_time = job.next_run_time.strftime("%Y-%m-%dT%H:%m")
     return render_template("job.html",
                            form=form,

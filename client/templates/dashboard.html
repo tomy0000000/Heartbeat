@@ -3,6 +3,9 @@
 {% block style %}
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/dashboard.css') }}">
 {% endblock %}
+{% block script %}
+<script type="text/javascript" src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}
 {% block content %}
 <table class="table table-striped table-hover">
     <thead class="thead-dark">
@@ -16,7 +19,7 @@
     </thead>
     <tbody>
         {% for job in jobs %}
-        <tr>
+        <tr id="job-{{ job.id }}-row">
             <th scope="row" class="align-middle">{{ job.name }}</th>
             <td class="align-middle">{{ job.id }}</td>
             <td class="align-middle">{{ job.trigger }}</td>
@@ -37,26 +40,26 @@
                 <a href="{{ url_for('job.modify', job_id=job.id) }}" class="btn btn-primary" role="button">
                     <i class="fas fa-edit fa-lg"></i>
                 </a>
-                <a href="#" class="btn btn-primary" role="button" data-toggle="modal" data-target="#RemoveJob{{ job.id }}Modal">
+                <a href="#" class="btn btn-primary" role="button" data-toggle="modal" data-target="#remove-job-{{ job.id }}-modal">
                     <i class="fas fa-trash fa-lg"></i>
                 </a>
                 <!-- Modal -->
-                <div class="modal fade" id="RemoveJob{{ job.id }}Modal" tabindex="-1" role="dialog" aria-labelledby="RemoveJob{{ job.id }}ModalTitle" aria-hidden="true">
+                <div class="modal fade" id="remove-job-{{ job.id }}-modal" tabindex="-1" role="dialog" aria-labelledby="remove-job-{{ job.id }}-modal-title" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="RemoveJob{{ job.id }}ModalTitle">Delete a Job</h5>
+                                <h5 class="modal-title" id="remove-job-{{ job.id }}-modal-title">Delete a Job</h5>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
                                 </button>
                             </div>
                             <div class="modal-body">
-                                <p>Are you sure you want to remove {{ job.name }} ({{ job.id }})?</p>
+                                <p>Are you sure you want to remove {{ job.name }} (#{{ job.id }})?</p>
                             </div>
                             <div class="modal-footer">
                                 <div class="mx-auto">
                                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                                    <a href="{{ url_for('api.job_remove', job_id=job.id) }}">
+                                    <a href="#" class="remove-job-button" data-job-id="{{ job.id }}" data-remove-endpoint="{{ url_for('api.job_remove', job_id=job.id) }}">
                                         <button type="button" class="btn btn-danger">Remove</button>
                                     </a>
                                 </div>
